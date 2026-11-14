@@ -148,7 +148,7 @@ html.dk .dock{background:rgba(20,22,44,.75)}html.dk .btn{color:#fff;background:r
 html.dk .quote{background:rgba(255,255,255,.05);color:var(--gold)}html.dk .tags span{background:rgba(255,255,255,.08);color:var(--mute)}html.dk .pl{background:color-mix(in srgb,var(--c) 22%,transparent)}html.dk .sh{background:rgba(255,255,255,.1);color:#fff}
 html.dk #adm{--ink:#1c1b3a;--mute:#5f6384;--line:rgba(91,91,240,.14);color:var(--ink)}
 </style>
-</head>
+<style>#adm #whole-html{width:100%;min-height:320px;resize:vertical;direction:ltr;text-align:left;font:13px/1.6 ui-monospace,Consolas,monospace;background:#081321;color:#d8e8ff;border:1px solid #34506d;border-radius:14px;padding:14px}#adm #whole-html:focus{border-color:#5ca9e8;box-shadow:0 0 0 3px #398bd522}#adm #html-preview-frame{width:100%;height:420px;background:white;border:1px solid var(--line);border-radius:14px;margin-top:12px}</style></head>
 <body>
 <i class="blob b1"></i><i class="blob b2"></i>
 <main class="wrap">
@@ -225,7 +225,7 @@ function bindTap(){const a=$('#arch');let lp;
  a.addEventListener('contextmenu',e=>e.preventDefault())}
 addEventListener('hashchange',()=>{if(location.hash==='#admin')openAdm()});
 /* admin */
-const TABS=['عمومی','درباره','مسیر','برنامه‌ها','فایل‌ها','سایت‌ها','کانال‌ها','تماس','ظاهر','ذخیره'];
+const TABS=['عمومی','درباره','مسیر','برنامه‌ها','فایل‌ها','سایت‌ها','کانال‌ها','تماس','ظاهر','ذخیره','کد کل سایت'];
 const NEW={files:()=>({id:rid(),name:'فایل جدید',ver:'',desc:'',url:'',fileName:'',size:0,ext:'',date:0}),facts:()=>({k:'عنوان',v:'مقدار'}),paths:()=>({icon:'star',t:'عنوان',d:'توضیح'}),projects:()=>({apkUrl:'',id:rid(),name:'برنامه جدید',ver:'1.0',desc:'',tags:'',link:'',img:'',code:'',apk:'',apkName:'',size:0}),links:()=>({name:'نام',url:'https://',icon:'link'}),sites:()=>({name:'سایت جدید',url:'https://',desc:'',img:''}),channels:()=>({name:'کانال جدید',url:'https://',pl:'rubika',kind:'channel',desc:''})};
 const PLO=Object.entries(PL).map(([k,v])=>[k,v[0]]),KDO=Object.entries(KD).map(([k,v])=>[k,v[0]]);
 const PRE=[['بنفش‌ملکوتی','#5b5bf0','#14b8a6','#f5a524'],['اقیانوسی','#0ea5e9','#10b981','#f59e0b'],['مرجانی','#f43f5e','#8b5cf6','#fb923c'],['یاقوتی','#7c3aed','#ec4899','#facc15'],['زمردی','#059669','#0ea5e9','#eab308'],['کلاسیک','#1a5a96','#0f7d63','#b8913b']];
@@ -315,6 +315,7 @@ async function submitNewProject(form){
  }
 }
 function pane(){
+ if(tab===10)return '<div class="box"><div class="bh">ویرایشگر HTML کل سایت</div><p class="note">کد کامل HTML جدید را وارد کن، پیش‌نمایش بگیر و فایل index.html را دریافت کن. انتشار مستقیم از داخل GitHub Pages بدون سرویس امن سمت سرور ممکن نیست.</p><textarea id="whole-html" spellcheck="false" dir="ltr" placeholder="&lt;!DOCTYPE html&gt; ..."></textarea><div class="row"><button class="mini g" data-a="html-preview">پیش‌نمایش کد</button><button class="mini" data-a="html-export">دریافت index.html</button></div><p class="note" id="html-status">پیش‌نویس فقط در همین مرورگر نگهداری می‌شود.</p><iframe id="html-preview-frame" title="پیش‌نمایش HTML" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe></div>';
  if(tab==0)return F('عنوان صفحه (تب مرورگر)','site.title')+F('بسم الله','site.bismi')+F('نام','site.name')+F('معرفی کوتاه زیر نام','site.role',{t:'area'})+F('درباره من (متن)','site.bio',{t:'area',r:4})+F('آیه / جمله زیر بخش مسیر','site.ayah',{t:'area',r:2})+F('کد نمایشی صفحه اول','site.code',{t:'area',r:9,dir:'ltr'})+F('عنوان بخش درباره','site.tAbout')+F('عنوان بخش مسیر','site.tPath')+F('عنوان بخش برنامه‌ها','site.tProj')+F('عنوان بخش وب‌سایت‌ها','site.tSites')+F('عنوان بخش کانال‌ها','site.tChan')+F('عنوان بخش تماس','site.tContact')+F('متن پایین سایت','site.footer')+`<img class="prev" src="${esc(D.photo)}" alt="">`+IMG('تغییر عکس پروفایل','photo');
  if(tab==1)return list('facts',i=>F('عنوان',`facts.${i}.k`)+F('مقدار',`facts.${i}.v`),x=>esc(x.k));
  if(tab==2)return list('paths',i=>F('آیکون',`paths.${i}.icon`,{t:'sel',opts:ICO_OPTS})+F('عنوان',`paths.${i}.t`)+F('توضیح',`paths.${i}.d`,{t:'area'}),x=>esc(x.t));
@@ -348,6 +349,8 @@ adm.addEventListener('click',async e=>{const t=e.target.closest('button');if(!t)
  else if(d.rm!==undefined){const p=D.projects[+d.rm];if(confirm('فایل APK حذف شود؟')){await delf(p.apk);Object.assign(p,{apk:'',apkName:'',size:0});save();render();drawAdm()}}
  else if(d.pre!==undefined){const p=PRE[+d.pre];D.theme={blue:p[1],green:p[2],gold:p[3]};save();render();drawAdm()}
  else if(d.a==='pub'){t.disabled=true;flag('در حال انتشار…');await publish()}
+ else if(d.a==='html-preview'){const v=$('#whole-html')?.value||'';if(!v.trim())return alert('اول کد HTML را وارد کن.');localStorage.setItem('pn_html_draft',v);$('#html-preview-frame').srcdoc=v;$('#html-status').textContent='پیش‌نمایش آماده شد؛ هنوز روی سایت عمومی منتشر نشده است.'}
+ else if(d.a==='html-export'){const v=$('#whole-html')?.value||'';if(!v.trim())return alert('اول کد HTML را وارد کن.');dlf(v,'index.html','text/html;charset=utf-8');$('#html-status').textContent='فایل آماده شد؛ برای انتشار باید index.html مخزن جایگزین شود.'}
  else if(d.a==='close')adm.classList.remove('on');
  else if(d.a==='login'){const v=$('#lp').value;try{let ok;if(mode==='server')ok=(await api('login',{pw:v})).ok;else ok=D.pw?hash(v)===D.pw:v==='1392p';if(ok){unlocked=true;drawAdm()}else $('#le').textContent='رمز نادرست است.'}catch(x){$('#le').textContent='خطا در ارتباط با سرور.'}}
  else if(d.a==='pw'){const v=$('#np').value;if(v.length<8)return alert('رمز کوتاه است');try{await api('setpw',{pw:v});alert('رمز تغییر کرد')}catch(x){alert('خطا')}}
