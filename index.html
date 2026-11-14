@@ -280,7 +280,7 @@ async function submitNewProject(form){
  const apkFile=fd.get('apkFile'),imgFile=fd.get('imgFile');
  if(!name){alert('نام برنامه الزامی است.');return}
  if(!apkUrl){alert('لینک مستقیم دانلود APK را وارد کن.');return}
- if(!/^https?:\\/\\//i.test(apkUrl)){alert('لینک APK باید با https:// یا http:// شروع شود.');return}
+ if(!(apkUrl.startsWith('https://')||apkUrl.startsWith('http://'))){alert('لینک APK باید با https:// یا http:// شروع شود.');return}
  const submit=form.querySelector('[type="submit"]');submit.disabled=true;let addedProject=null;
  const progress=$('#newProjectProgress');
  const prog=v=>{if(progress)progress.style.width=(Math.max(0,Math.min(1,v))*100)+'%'};
