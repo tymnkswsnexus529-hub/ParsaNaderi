@@ -247,9 +247,7 @@ function F(l,p,o={}){const v=get(p),t=o.t||'text';const inner=t==='area'?`<texta
 const ICO_OPTS=Object.entries(IN);
 const IMG=(l,p)=>`<label class="f"><span>${l}</span><input type="file" accept="image/*" data-img="${p}"></label>`;
 function list(key,fn,title){return D[key].map((x,i)=>`<div class="box"><div class="bh"><span>${title(x,i)}</span><button class="mini d" data-del="${key}.${i}">حذف</button></div>${fn(i)}</div>`).join('')+`<button class="mini g" data-add="${key}">+ افزودن</button>`}
-function apkBox(i){const p=D.projects[i],u=F('لینک مستقیم دانلود APK (کانال روبیکا، گیت‌هاب، هاست و…)',`projects.${i}.apkUrl`,{dir:'ltr'});
- if(mode!=='server'&&mode!=='gh')return u+`<p class="note">آپلود مستقیم فایل APK فقط با هاست PHP و فایل api.php ممکن است؛ این‌جا لینک دانلود را بگذارید.</p>`;
- return `<div class="f"><span>بارگذاری فایل APK</span>${p.apk?`<div class="note">✓ ${esc(p.apkName||'app.apk')} · ${mb(p.size)} <button class="mini d" data-rm="${i}">حذف فایل</button></div>`:''}<input type="file" accept=".apk,application/vnd.android.package-archive" data-apk="${i}"><div class="bar"><i id="pg${i}"></i></div></div>`+u}
+function apkBox(i){const p=D.projects[i];return `<div class="f"><span>لینک مستقیم دانلود APK</span>${p.apk?'<div class="note">فایل قبلی همچنان فعال است.</div>':''}${F('لینک مستقیم دانلود APK',`projects.${i}.apkUrl`,{dir:'ltr'})}<p class="note">برای فایل‌های حجیم، فایل را در GitHub Releases قرار بده و لینک دانلود آن را اینجا وارد کن. این روش به حافظه مرورگر وابسته نیست.</p></div>`}
 function fileBox(i){const p=D.files[i];return `<div class="f"><span>بارگذاری فایل (هر نوع: apk، zip، pdf، exe …)</span>${p.fileName?`<div class="note">✓ ${esc(p.fileName)} · ${mb(p.size)}</div>`:''}<input type="file" data-fl="${i}"><div class="bar"><i id="fg${i}"></i></div></div>`+F('یا لینک مستقیم دانلود',`files.${i}.url`,{dir:'ltr'})}
 function ghBox(){const c={branch:'main',...ghGuess(),...GH()};return `<div class="box"><div class="bh">اتصال به گیت‌هاب (ذخیره برای همه)</div><p class="note">یک‌بار توکن بسازید: GitHub ← Settings ← Developer settings ← Fine-grained tokens ← فقط همین مخزن ← Contents: Read and write. توکن فقط در همین مرورگر شما می‌ماند و داخل سایت نوشته نمی‌شود.</p><label class="f"><span>نام کاربری</span><input id="gho" dir="ltr" value="${esc(c.owner)}"></label><label class="f"><span>نام مخزن</span><input id="ghr" dir="ltr" value="${esc(c.repo)}"></label><label class="f"><span>شاخه</span><input id="ghb" dir="ltr" value="${esc(c.branch)}"></label><label class="f"><span>توکن</span><input id="ght" type="password" dir="ltr" value="${esc(c.token||'')}"></label><button class="mini g" data-a="ghs">ذخیره و تست اتصال</button></div><div class="box"><div class="bh">رمز ورود پنل</div><label class="f"><span>رمز جدید (حداقل ۴ نویسه)</span><input type="password" id="np2"></label><button class="mini g" data-a="pw2">ثبت رمز</button></div>`}
 function projectsPane(){
@@ -267,7 +265,7 @@ function addProject(){
  <label class="f"><span>برچسب‌ها (با کاما جدا کنید)</span><input name="tags" placeholder="مثلاً ابزار، اندروید"></label>
  <label class="f"><span>لینک مستقیم دانلود APK</span><input name="apkUrl" type="url" dir="ltr" placeholder="https://..."></label>
  <small class="note">برای فایل‌های حجیم، فایل را در GitHub Releases بارگذاری کن و لینک مستقیم فایل را اینجا قرار بده. محدودیت حافظه مرورگر شامل این روش نمی‌شود.</small>
- <label class="f"><span>یا انتخاب فایل APK از دستگاه</span><input name="apkFile" type="file" accept=".apk,application/vnd.android.package-archive"></label>
+
  ${mode==='local'?`<p class="note">در حالت محلی، فایل داخل همین مرورگر ذخیره می‌شود و برای نمایش عمومی باید از حالت سرور یا گیت‌هاب استفاده کنید.</p>`:''}
  <label class="f"><span>لینک دیگر (اختیاری)</span><input name="link" type="url" dir="ltr" placeholder="https://..."></label>
  <label class="f"><span>تصویر / آیکون برنامه</span><input name="imgFile" type="file" accept="image/*"></label>
@@ -281,9 +279,8 @@ async function submitNewProject(form){
  const fd=new FormData(form),name=String(fd.get('name')||'').trim(),apkUrl=String(fd.get('apkUrl')||'').trim();
  const apkFile=fd.get('apkFile'),imgFile=fd.get('imgFile');
  if(!name){alert('نام برنامه الزامی است.');return}
- if(!(apkFile instanceof File&&apkFile.size)&&!apkUrl){alert('فایل APK یا لینک مستقیم آن را وارد کن.');return}
- if(apkUrl&&!/^https?:\\/\\//i.test(apkUrl)){alert('لینک APK باید با https:// یا http:// شروع شود.');return}
- if(apkFile instanceof File&&apkFile.size&&!/\.apk$/i.test(apkFile.name)){alert('فقط فایل APK مجاز است.');return}
+ if(!apkUrl){alert('لینک مستقیم دانلود APK را وارد کن.');return}
+ if(!/^https?:\\/\\//i.test(apkUrl)){alert('لینک APK باید با https:// یا http:// شروع شود.');return}
  const submit=form.querySelector('[type="submit"]');submit.disabled=true;let addedProject=null;
  const progress=$('#newProjectProgress');
  const prog=v=>{if(progress)progress.style.width=(Math.max(0,Math.min(1,v))*100)+'%'};
