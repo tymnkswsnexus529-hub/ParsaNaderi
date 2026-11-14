@@ -222,7 +222,7 @@ async function loadGithubReleaseFiles(){
   if(!ghReleaseCache&&!ghReleasePromise)ghReleasePromise=(async()=>{const r=await fetch('https://api.github.com/repos/tymnkswsnexus529-hub/ParsaNaderi/releases?per_page=100',{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});if(!r.ok)throw new Error('GitHub API '+r.status);return await r.json()})();
   const releases=ghReleaseCache||await ghReleasePromise;ghReleaseCache=releases;ghReleasePromise=null;
   const assets=releases.flatMap(rel=>(rel.assets||[]).filter(a=>a.state==='uploaded').map(a=>({asset:a,release:rel}))).sort((a,b)=>new Date(b.asset.created_at)-new Date(a.asset.created_at));
-  if(!assets.length){box.innerHTML='<div class="empty">هنوز فایلی در انتشارهای GitHub قرار نگرفته است.</div>';return}
+  if(!assets.length){box.innerHTML='';return}
   box.innerHTML='<div class="cards">'+assets.map(({asset:a,release:r})=>{const isApk=/\.apk$/i.test(a.name);return `<a class="card file" href="${esc(a.browser_download_url)}" target="_blank" rel="noopener"><div class="sg">${ico(isApk?'android':'dl')}<em>${esc((a.name.split('.').pop()||'file').toUpperCase())}</em></div><h3>${esc(a.name)}</h3><p>${esc(r.name||r.tag_name||'فایل منتشرشده')}</p><span class="dlb">${ico('dl')} دانلود مستقیم · ${mb(a.size)} · ${fa(a.download_count||0)} دانلود</span></a>`}).join('')+'</div>';
  }catch(e){ghReleasePromise=null;box.innerHTML='<div class="empty">دریافت فهرست فایل‌ها ممکن نشد. کمی بعد دوباره صفحه را باز کن.</div>'}
 }
@@ -247,7 +247,7 @@ function F(l,p,o={}){const v=get(p),t=o.t||'text';const inner=t==='area'?`<texta
 const ICO_OPTS=Object.entries(IN);
 const IMG=(l,p)=>`<label class="f"><span>${l}</span><input type="file" accept="image/*" data-img="${p}"></label>`;
 function list(key,fn,title){return D[key].map((x,i)=>`<div class="box"><div class="bh"><span>${title(x,i)}</span><button class="mini d" data-del="${key}.${i}">حذف</button></div>${fn(i)}</div>`).join('')+`<button class="mini g" data-add="${key}">+ افزودن</button>`}
-function apkBox(i){const p=D.projects[i];return `<div class="f"><span>لینک مستقیم دانلود APK</span>${p.apk?'<div class="note">فایل قبلی همچنان فعال است.</div>':''}${F('لینک مستقیم دانلود APK',`projects.${i}.apkUrl`,{dir:'ltr'})}<p class="note">برای فایل‌های حجیم، فایل را در GitHub Releases قرار بده و لینک دانلود آن را اینجا وارد کن. این روش به حافظه مرورگر وابسته نیست.</p></div>`}
+function apkBox(i){const p=D.projects[i];return `<div class="f"><span>لینک مستقیم دانلود APK</span>${p.apk?'<div class="note">فایل قبلی همچنان فعال است.</div>':''}${F('لینک مستقیم دانلود APK',`projects.${i}.apkUrl`,{dir:'ltr'})}<a class="mini g" href="https://github.com/tymnkswsnexus529-hub/ParsaNaderi/releases/new" target="_blank" rel="noopener" style="display:inline-flex;margin:8px 0">بارگذاری APK در GitHub</a><p class="note">پس از انتشار، نشانی فایل را در کادر لینک بالا قرار بده.</p></div>`}
 function fileBox(i){const p=D.files[i];return `<div class="f"><span>بارگذاری فایل (هر نوع: apk، zip، pdf، exe …)</span>${p.fileName?`<div class="note">✓ ${esc(p.fileName)} · ${mb(p.size)}</div>`:''}<input type="file" data-fl="${i}"><div class="bar"><i id="fg${i}"></i></div></div>`+F('یا لینک مستقیم دانلود',`files.${i}.url`,{dir:'ltr'})}
 function ghBox(){const c={branch:'main',...ghGuess(),...GH()};return `<div class="box"><div class="bh">اتصال به گیت‌هاب (ذخیره برای همه)</div><p class="note">یک‌بار توکن بسازید: GitHub ← Settings ← Developer settings ← Fine-grained tokens ← فقط همین مخزن ← Contents: Read and write. توکن فقط در همین مرورگر شما می‌ماند و داخل سایت نوشته نمی‌شود.</p><label class="f"><span>نام کاربری</span><input id="gho" dir="ltr" value="${esc(c.owner)}"></label><label class="f"><span>نام مخزن</span><input id="ghr" dir="ltr" value="${esc(c.repo)}"></label><label class="f"><span>شاخه</span><input id="ghb" dir="ltr" value="${esc(c.branch)}"></label><label class="f"><span>توکن</span><input id="ght" type="password" dir="ltr" value="${esc(c.token||'')}"></label><button class="mini g" data-a="ghs">ذخیره و تست اتصال</button></div><div class="box"><div class="bh">رمز ورود پنل</div><label class="f"><span>رمز جدید (حداقل ۴ نویسه)</span><input type="password" id="np2"></label><button class="mini g" data-a="pw2">ثبت رمز</button></div>`}
 function projectsPane(){
@@ -264,7 +264,8 @@ function addProject(){
  <label class="f"><span>توضیح</span><textarea name="desc" rows="3"></textarea></label>
  <label class="f"><span>برچسب‌ها (با کاما جدا کنید)</span><input name="tags" placeholder="مثلاً ابزار، اندروید"></label>
  <label class="f"><span>لینک مستقیم دانلود APK</span><input name="apkUrl" type="url" dir="ltr" placeholder="https://..."></label>
- <small class="note">برای فایل‌های حجیم، فایل را در GitHub Releases بارگذاری کن و لینک مستقیم فایل را اینجا قرار بده. محدودیت حافظه مرورگر شامل این روش نمی‌شود.</small>
+ <a class="mini g" href="https://github.com/tymnkswsnexus529-hub/ParsaNaderi/releases/new" target="_blank" rel="noopener" style="display:inline-flex;margin:8px 0">۱) انتخاب فایل APK در GitHub</a>
+ <small class="note">بعد از انتشار، روی نام فایل بزن و نشانی دانلودش را کپی کن؛ سپس آن را در کادر بالا جای‌گذاری کن.</small>
 
  ${mode==='local'?`<p class="note">در حالت محلی، فایل داخل همین مرورگر ذخیره می‌شود و برای نمایش عمومی باید از حالت سرور یا گیت‌هاب استفاده کنید.</p>`:''}
  <label class="f"><span>لینک دیگر (اختیاری)</span><input name="link" type="url" dir="ltr" placeholder="https://..."></label>
